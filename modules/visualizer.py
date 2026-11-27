@@ -137,7 +137,7 @@ def create_scatter_chart(
     colors = THEME_PALETTES.get(palette, THEME_PALETTES["Indigo Modern"])
     fig = px.scatter(
         df, x=x, y=y, size=size, color=color,
-        trendline="ols" if trendline else None,
+        trendline="ols" if trendline and pd.api.types.is_numeric_dtype(df[x]) and pd.api.types.is_numeric_dtype(df[y]) else None,
         text=df.index if show_labels else None,
         color_discrete_sequence=colors
     )
