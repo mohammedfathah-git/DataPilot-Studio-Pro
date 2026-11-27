@@ -145,6 +145,7 @@ def create_scatter_chart(
         fig.update_traces(textposition="top center")
     return fig
 
+
 def create_distribution_chart(
     df: pd.DataFrame,
     col: str,
@@ -154,19 +155,68 @@ def create_distribution_chart(
     palette: str = "Indigo Modern",
     show_labels: bool = True
 ) -> go.Figure:
-    colors = THEME_PALETTES.get(palette, THEME_PALETTES["Indigo Modern"])
+
+    colors = THEME_PALETTES.get(
+        palette,
+        THEME_PALETTES["Indigo Modern"]
+    )
+
+    if col not in df.columns:
+        raise ValueError(f"Column '{col}' not found.")
+
     if kind == "Histogram":
+        plot_df = df.copy()
+
+        # Convert histogram values to numeric
+        plot_df[col] = pd.to_numeric(
+            plot_df[col], errors="coerce"
+        )
+        plot_df = plot_df.dropna(subset=[col])
+
+        if plot_df.empty:
+            raise ValueError(
+                f"No valid numeric values available for {col}."
+            )
+
         fig = px.histogram(
-            df, x=col, nbins=nbins, color=color, marginal="box",
-            text_auto=True if show_labels else False,
+            plot_df,
+            x=col,
+            nbins=nbins,
+            color=color if color in plot_df.columns else None,
+            marginal="box",
             color_discrete_sequence=colors
         )
-        
+
+        if show_labels:
+            fig.update_traces(
+                hovertemplate="Value: %{x}<br>Count: %{y}<extra></extra>"
+            )
+
     elif kind == "Box Plot":
-        fig = px.box(df, y=col, x=color, color=color, color_discrete_sequence=colors)
+        fig = px.box(
+            df,
+            y=col,
+            x=color,
+            color=color,
+            color_discrete_sequence=colors
+        )
+
     elif kind == "Violin Plot":
-        fig = px.violin(df, y=col, x=color, color=color, box=True, points="all", color_discrete_sequence=colors)
+        fig = px.violin(
+            df,
+            y=col,
+            x=color,
+            color=color,
+            box=True,
+            points="all",
+            color_discrete_sequence=colors
+        )
+
+    else:
+        raise ValueError(f"Unsupported distribution chart: {kind}")
+
     return fig
+
 
 def create_composition_chart(
     df: pd.DataFrame,
