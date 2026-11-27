@@ -161,8 +161,7 @@ def create_distribution_chart(
             text_auto=True if show_labels else False,
             color_discrete_sequence=colors
         )
-        if show_labels:
-            fig.update_traces(textposition="outside")
+        
     elif kind == "Box Plot":
         fig = px.box(df, y=col, x=color, color=color, color_discrete_sequence=colors)
     elif kind == "Violin Plot":
